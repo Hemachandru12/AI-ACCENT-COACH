@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Accent Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="11zon_resized (1).png">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* FIX: Updated background to the new blue plexus design */
+            background-color: #0a0f1e;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 174, 239, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 174, 239, 0.08) 0%, transparent 20%),
+                radial-gradient(circle at 50% 80%, rgba(0, 174, 239, 0.09) 0%, transparent 20%);
+        }
+        .main-container {
+            /* FIX: Adjusted container to complement new background */
+            background: rgba(15, 23, 42, 0.7); /* slate-900 with alpha */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.8s ease-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            /* FIX: Updated loader to hot pink */
+            border-top: 4px solid #F72585; 
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .score-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- FIX: Increased max-width from max-w-md to max-w-4xl -->
+    <div class="main-container max-w-4xl w-full p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/50">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-6">
+            <!-- FIX: Updated logo to new blue gradient -->
+            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">AI Accent Coach</h1>
+                <p class="text-gray-400">Practice your pronunciation with interactive feedback</p>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-black/20 p-5 rounded-lg">
+            <div class="flex items-center gap-2 text-gray-300 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                <h2 class="font-semibold">Choose a word</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="phrase-select" class="block text-xs font-medium text-gray-400 mb-1">Word to practice</label>
+                    <select id="phrase-select" class="custom-select w-full p-3 pr-10 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition">
+                        <option value="world">world</option>
+                        <option value="colonel">colonel</option>
+                        <option value="anemone">anemone</option>
+                        <option value="schedule">schedule</option>
+                        <option value="pronunciation">pronunciation</option>
+                        <option value="squirrel">squirrel</option>
+                        <option value="otorhinolaryngologist">otorhinolaryngologist</option>
+                        <option value="worcestershire">worcestershire</option>
+                    </select>
+                </div>
+                <div class="relative">
+                    <label for="accent-select" class="block text-xs font-medium text-gray-400 mb-1">Listen in accent</label>
+                    <select id="accent-select" class="custom-select w-full p-3 pr-10 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition">
+                        <option value="en-US">American English</option>
+                        <option value="en-GB">British English</option>
+                        <option value="en-AU">Australian English</option>
+                    </select>
+                </div>
+            </div>
+             <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <!-- FIX: Updated button colors -->
+                <button id="listen-btn" class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold py-3 px-4 rounded-full hover:opacity-90 active:scale-95 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                    Listen
+                </button>
+                <button id="record-btn" class="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white font-semibold py-3 px-4 rounded-full hover:opacity-90 active:scale-95 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"></path></svg>
+                    Record
+                </button>
+            </div>
+            <!-- Tip Text -->
+            <div class="text-center text-gray-500 text-xs mt-6">
+                Tip: tap Listen, then Record your attempt. You'll get instant feedback and a score.
+            </div>
+        </div>
+
+        <!-- Audio Visualizer -->
+        <div id="visualizer-container" class="hidden mt-6">
+             <canvas id="visualizer" class="w-full h-24 rounded-lg bg-black/20"></canvas>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loader" class="hidden flex flex-col items-center justify-center mt-8 text-center">
+            <div class="loader"></div>
+            <p class="text-gray-400 mt-4">Analyzing your pronunciation...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-container" class="hidden mt-8 text-center">
+            <div class="flex items-center gap-2 text-yellow-400 mb-4 justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                <h2 class="text-xl font-bold">Your Results</h2>
+            </div>
+            
+            <div class="relative w-40 h-40 mx-auto mb-6">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <circle class="text-gray-700" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                    <circle id="score-circle" class="progress-ring__circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                </svg>
+                <span id="score-text" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold">0%</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-left bg-black/20 p-4 rounded-lg">
+                <div>
+                    <h3 class="font-semibold text-gray-400">You Said:</h3>
+                    <p id="user-text" class="text-white text-lg"></p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-400">Target Word:</h3>
+                    <p id="target-text" class="text-white text-lg"></p>
+                </div>
+            </div>
+
+            <!-- Phonetic Guide Display -->
+            <div id="phonetic-display" class="hidden mt-4 bg-black/20 p-4 rounded-lg text-left">
+                 <p class="text-xs font-medium text-gray-400 mb-2">Phonetic guide</p>
+                 <div id="phonetic-boxes" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Error Messages -->
+        <div id="error-message" class="hidden mt-6 p-4 bg-red-500/20 border border-red-500 text-red-300 rounded-lg text-left"></div>
+    </div>
+
+    <script>
+        // --- Element Selection ---
+        const phraseSelect = document.getElementById('phrase-select');
+        const accentSelect = document.getElementById('accent-select');
+        const listenBtn = document.getElementById('listen-btn');
+        const recordBtn = document.getElementById('record-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreText = document.getElementById('score-text');
+        const scoreCircle = document.getElementById('score-circle');
+        const userTextElem = document.getElementById('user-text');
+        const targetTextElem = document.getElementById('target-text');
+        const phoneticDisplay = document.getElementById('phonetic-display');
+        const phoneticBoxes = document.getElementById('phonetic-boxes');
+        const errorMessage = document.getElementById('error-message');
+        const loader = document.getElementById('loader');
+        const visualizerContainer = document.getElementById('visualizer-container');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        // --- State Variables ---
+        let audioContext, analyser, source, animationFrameId;
+        let mediaRecorder, audioChunks = [], isRecording = false;
+
+        // --- Progress Circle Setup ---
+        const radius = scoreCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        scoreCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        scoreCircle.style.strokeDashoffset = circumference;
+        
+        // --- Event Listeners ---
+        listenBtn.addEventListener('click', () => {
+            const word = phraseSelect.value;
+            const accent = accentSelect.value;
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = accent;
+            speechSynthesis.speak(utterance);
+        });
+        recordBtn.addEventListener('click', () => isRecording ? stopRecording() : startRecording());
+
+        // --- Core Functions ---
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    isRecording = true;
+                    recordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"></path></svg> Stop`;
+                    
+                    hideError();
+                    resultsContainer.classList.add('hidden');
+                    visualizerContainer.classList.remove('hidden');
+
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                    visualize(stream);
+
+                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        sendAudioToServer(audioBlob);
+                        audioChunks = [];
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                })
+                .catch(err => {
+                    console.error("Error accessing microphone:", err);
+                    handleError("Could not access microphone. Please grant permission and try again.");
+                });
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+            isRecording = false;
+            recordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"></path></svg> Record`;
+            
+            loader.classList.remove('hidden');
+            visualizerContainer.classList.add('hidden');
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        }
+        
+        function visualize(stream) {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            source = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            source.connect(analyser);
+
+            const draw = () => {
+                animationFrameId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+
+                canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = (canvas.width / bufferLength) * 2;
+                let barHeight;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] / 2.5;
+                    // FIX: Updated visualizer gradient
+                    const gradient = canvasCtx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+                    gradient.addColorStop(0, '#00AEEF'); // light blue
+                    gradient.addColorStop(1, '#F72585'); // hot pink
+                    canvasCtx.fillStyle = gradient;
+                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                }
+            };
+            draw();
+        }
+
+        async function sendAudioToServer(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('phrase', phraseSelect.value);
+
+            try {
+                const response = await fetch('http://localhost:5000/analyze', { method: 'POST', body: formData });
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `Server responded with status ${response.status}`);
+                }
+                
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error sending audio to server:', error);
+                const guideHTML = `
+                    <strong class="text-lg">Oops! Connection Failed.</strong>
+                    <p class="mt-2">Please follow this guide exactly:</p>
+                    <ol class="list-decimal list-inside mt-2 space-y-1">
+                        <li>In <strong>Terminal 1</strong>, run: <code class="bg-red-900/50 p-1 rounded">python app.py</code></li>
+                        <li>In <strong>Terminal 2</strong>, run: <code class="bg-red-900/50 p-1 rounded">python -m http.server 8000</code></li>
+                        <li>Go to this address in your browser: <code class="bg-red-900/50 p-1 rounded">http://localhost:8000</code></li>
+                    </ol>`;
+                handleError(guideHTML, true);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+        
+        // --- UI Update Functions ---
+        function displayResults(data) {
+            resultsContainer.classList.remove('hidden');
+            hideError();
+            
+            // FIX: Added validation to prevent NaN errors if the score is missing from the response.
+            const scoreValue = data.score !== undefined && !isNaN(data.score) ? data.score : 0;
+            const score = Math.round(scoreValue * 100);
+
+            const userSaidText = data.user_text || '...';
+            userTextElem.textContent = userSaidText;
+            targetTextElem.textContent = phraseSelect.value;
+            
+            renderPhoneticGuide(data.phonetic_guide, phoneticBoxes);
+            animateScore(score);
+        }
+
+        function renderPhoneticGuide(guide, container) {
+            phoneticDisplay.classList.remove('hidden');
+            container.innerHTML = ''; // Clear previous guide
+            if (guide) {
+                const phonemes = guide.split(' ');
+                phonemes.forEach(p => {
+                    const phonemeEl = document.createElement('span');
+                    phonemeEl.className = 'bg-gray-300 text-gray-800 text-sm font-bold px-2 py-1 rounded';
+                    phonemeEl.textContent = p;
+                    container.appendChild(phonemeEl);
+                });
+            }
+        }
+        
+        function animateScore(finalScore) {
+            let currentScore = 0;
+            const interval = setInterval(() => {
+                currentScore = Math.min(currentScore + 2, finalScore);
+                renderScore(currentScore);
+                if (currentScore >= finalScore) clearInterval(interval);
+            }, 15);
+        }
+
+        function renderScore(score) {
+            scoreText.textContent = `${score}%`;
+            const offset = circumference - (score / 100) * circumference;
+            scoreCircle.style.strokeDashoffset = offset;
+
+            let color, gradient;
+            if (score < 50) {
+                color = '#f43f5e'; // red
+                gradient = 'linear-gradient(to right, #f43f5e, #be123c)';
+            } else if (score < 80) {
+                color = '#f59e0b'; // amber
+                gradient = 'linear-gradient(to right, #f59e0b, #b45309)';
+            } else {
+                // FIX: Updated high score color to match the "Listen" button blue
+                color = '#2563eb'; // blue-600
+                gradient = 'linear-gradient(to right, #38bdf8, #2563eb)'; // cyan-400 to blue-600
+            }
+            scoreCircle.style.stroke = color;
+            scoreText.style.backgroundImage = gradient;
+        }
+
+        function handleError(message, isHTML = false) {
+            resultsContainer.classList.add('hidden');
+            if (isHTML) {
+                errorMessage.innerHTML = message;
+            } else {
+                errorMessage.textContent = `Oops! ${message}`;
+            }
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
